@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 
 import {
   DEFAULT_USER_FILTER,
+  fetchUserDetail,
   getCreateUserErrorMessage,
   getResetPasswordErrorMessage,
   getToggleUserSuspensionErrorMessage,
@@ -26,6 +27,7 @@ import {
   useUserDetailQuery,
   useUserTenancyOptionsQuery,
   useUsersQuery,
+  USER_DETAIL_STALE_TIME,
   userDetailQueryKeys,
   usersQueryKey,
 } from '@/features/user'
@@ -263,7 +265,6 @@ export function UsersPage() {
     : null
   const selectedUserDetail =
     userDetailQuery.data?.userId === detailTarget?.userId ? userDetailQuery.data : undefined
-  const freshUserDetail = userDetailQuery.isFetching ? undefined : selectedUserDetail
   const tenancyOptions = userTenancyOptionsQuery.data ?? USER_TENANCY_OPTIONS
   const tenancyOptionsErrorMessage = userTenancyOptionsQuery.isError
     ? getUserTenancyOptionsErrorMessage(userTenancyOptionsQuery.error)
@@ -392,7 +393,16 @@ export function UsersPage() {
 
   function openUserDetailModal(user: UserListItem) {
     setDetailSaveErrorMessage(null)
+    void prefetchUserDetail(user)
     setDetailTarget(user)
+  }
+
+  function prefetchUserDetail(user: UserListItem) {
+    return queryClient.prefetchQuery({
+      queryFn: ({ signal }) => fetchUserDetail(user.userId, signal),
+      queryKey: userDetailQueryKeys.detail(user.userId),
+      staleTime: USER_DETAIL_STALE_TIME,
+    })
   }
 
   function closeUserDetailModal() {
@@ -494,6 +504,7 @@ export function UsersPage() {
         sortDirection={sort.direction}
         users={sortedUsers}
         onEditUser={openUserDetailModal}
+        onPrefetchUserDetail={prefetchUserDetail}
         onResetPassword={openResetPasswordModal}
         onSortChange={handleSortChange}
         onToggleSuspension={openSuspendToggleModal}
@@ -526,7 +537,7 @@ export function UsersPage() {
         onSubmit={handleCreate}
       />
       <UserDetailModal
-        detail={freshUserDetail}
+        detail={selectedUserDetail}
         errorMessage={detailErrorMessage}
         loading={userDetailQuery.isFetching}
         open={detailTarget !== null}

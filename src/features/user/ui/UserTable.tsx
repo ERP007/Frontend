@@ -15,6 +15,7 @@ export interface UserTableProps {
   header?: ReactNode
   loading?: boolean
   onEditUser?: (user: UserListItem) => void
+  onPrefetchUserDetail?: (user: UserListItem) => void
   onResetPassword?: (user: UserListItem) => void
   onSortChange?: (sortBy: UserSortBy, sortDirection: UserSortDirection) => void
   onToggleSuspension?: (user: UserListItem) => void
@@ -39,6 +40,7 @@ export function UserTable({
   header,
   loading = false,
   onEditUser,
+  onPrefetchUserDetail,
   onResetPassword,
   onSortChange,
   onToggleSuspension,
@@ -177,7 +179,14 @@ export function UserTable({
             },
           ]
 
-          return <FgDropdownMenu items={actionItems} />
+          return (
+            <FgDropdownMenu
+              items={actionItems}
+              onOpenChange={(open) => {
+                if (open) onPrefetchUserDetail?.(user)
+              }}
+            />
+          )
         },
         header: '액션',
         id: 'actions',
@@ -185,7 +194,7 @@ export function UserTable({
         size: 70,
       },
     ],
-    [currentEmployeeNo, onEditUser, onResetPassword, onToggleSuspension],
+    [currentEmployeeNo, onEditUser, onPrefetchUserDetail, onResetPassword, onToggleSuspension],
   )
 
   const emptyState = errorMessage ? (
