@@ -20,6 +20,7 @@ export interface FgDropdownItem {
 export interface FgDropdownMenuProps {
   align?: 'start' | 'center' | 'end'
   items: FgDropdownItem[]
+  onOpenChange?: (open: boolean) => void
   trigger?: ReactNode
 }
 
@@ -83,9 +84,9 @@ function renderDropdownItem(item: FgDropdownItem, index: number) {
   )
 }
 
-export function FgDropdownMenu({ align = 'end', items, trigger }: FgDropdownMenuProps) {
+export function FgDropdownMenu({ align = 'end', items, onOpenChange, trigger }: FgDropdownMenuProps) {
   return (
-    <DropdownMenu.Root>
+    <DropdownMenu.Root onOpenChange={onOpenChange}>
       <DropdownMenu.Trigger asChild>
         {trigger ?? (
           <FgButton aria-label="액션 메뉴" size="icon" variant="default">

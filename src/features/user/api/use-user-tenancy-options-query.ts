@@ -12,6 +12,7 @@ interface WarehouseOptionsResponse {
 }
 
 const TENANCY_OPTIONS_PATH = '/inventory/warehouses/options'
+const USER_TENANCY_OPTIONS_STALE_TIME = 5 * 60 * 1000
 
 export const userTenancyOptionsQueryKey = ['user-tenancy-options'] as const
 
@@ -86,5 +87,6 @@ export function useUserTenancyOptionsQuery() {
 
       return uniqueTenancyOptions([ADMIN_TENANCY_OPTION, ...warehouseOptions])
     },
+    staleTime: USER_TENANCY_OPTIONS_STALE_TIME,
   })
 }

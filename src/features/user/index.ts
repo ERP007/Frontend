@@ -21,7 +21,9 @@ export {
   useUpdateUserMutation,
 } from './api/use-update-user-mutation'
 export {
+  fetchUserDetail,
   getUserDetailErrorMessage,
+  USER_DETAIL_STALE_TIME,
   useUserDetailQuery,
   userDetailQueryKeys,
 } from './api/use-user-detail-query'

@@ -23,6 +23,7 @@ const userStatuses = new Set<UserStatus>(['ACTIVE', 'PENDING', 'SUSPENDED'])
 export const userDetailQueryKeys = {
   detail: (userId?: string | null) => ['users', 'detail', userId ?? ''] as const,
 }
+export const USER_DETAIL_STALE_TIME = 5 * 60 * 1000
 
 function hasContent<T>(value: T | ApiContentResponse<T>): value is ApiContentResponse<T> {
   return typeof value === 'object' && value !== null && 'content' in value
@@ -66,6 +67,15 @@ function unwrapUserDetailResponse(value: UserDetailResponse | ApiContentResponse
   return data
 }
 
+export async function fetchUserDetail(userId: string, signal?: AbortSignal) {
+  const response = await api.get<UserDetailResponse | ApiContentResponse<UserDetailResponse>>(
+    `/users/${encodeURIComponent(userId)}`,
+    { signal },
+  )
+
+  return unwrapUserDetailResponse(response.data)
+}
+
 export function getUserDetailErrorMessage(error: unknown) {
   if (isErrorResponse(error)) {
     return getUserDetailErrorDetail(error)
@@ -107,14 +117,8 @@ function getUserDetailErrorDetail(error: ErrorResponse) {
 export function useUserDetailQuery(userId?: string | null, enabled = true) {
   return useQuery({
     enabled: Boolean(userId) && enabled,
-    queryFn: async ({ signal }) => {
-      const response = await api.get<UserDetailResponse | ApiContentResponse<UserDetailResponse>>(
-        `/users/${encodeURIComponent(userId ?? '')}`,
-        { signal },
-      )
-
-      return unwrapUserDetailResponse(response.data)
-    },
+    queryFn: ({ signal }) => fetchUserDetail(userId ?? '', signal),
     queryKey: userDetailQueryKeys.detail(userId),
+    staleTime: USER_DETAIL_STALE_TIME,
   })
 }
